@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Client-side Hermes Agent token-cost calculator using Nous Portal model pricing.">
+  <meta name="color-scheme" content="dark light">
+  <title>Hermes Token Cost — Nous Portal estimate</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#calculator">Skip to calculator</a>
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">H/</span>
+      <div><h1>Hermes Token Cost</h1><p>Nous Portal pricing estimate</p></div>
+    </div>
+    <div class="header-actions">
+      <a class="pricing-status" href="https://portal.nousresearch.com/" target="_blank" rel="noreferrer"><span></span> Pricing checked Aug 9, 2026 ↗</a>
+      <label class="compact-select"><span>Currency</span><select id="currency" aria-label="Display currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="CAD">CAD</option><option value="AUD">AUD</option></select></label>
+      <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch theme" title="Switch theme">◐</button>
+    </div>
+  </header>
+
+  <main id="calculator" class="shell">
+    <section class="estimate-panel" aria-labelledby="estimate-title">
+      <div class="estimate-main">
+        <div class="eyebrow" id="estimate-title">Estimated <span id="period-label">monthly</span> cost</div>
+        <div class="cost-line"><strong id="primary-cost">$256.96</strong><span id="primary-period">/ month</span></div>
+        <p id="scenario-label">Actual Hermes usage · last 30 days</p>
+      </div>
+      <div class="metric-grid">
+        <div class="metric"><span>Total tokens</span><strong id="total-tokens">455.02M</strong><small id="token-detail">31.66M input · 2.19M output</small></div>
+        <div class="metric"><span>Daily estimate</span><strong id="daily-cost">$8.57</strong><small>monthly ÷ 30</small></div>
+        <div class="metric"><span>Annual estimate</span><strong id="annual-cost">$3,083.54</strong><small>monthly × 12</small></div>
+        <div class="metric"><span>Cached / other</span><strong id="cache-ratio">92.56%</strong><small id="cache-tokens">421.16M tokens</small></div>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="Calculator controls">
+      <div class="tabs" role="tablist" aria-label="Calculator mode">
+        <button role="tab" id="tab-my" data-mode="my" aria-selected="true">My Hermes Usage</button>
+        <button role="tab" id="tab-detailed" data-mode="detailed" aria-selected="false">Detailed Calculator</button>
+        <button role="tab" id="tab-simple" data-mode="simple" aria-selected="false">Simple Calculator</button>
+      </div>
+      <div class="toolbar-actions">
+        <div class="segmented" aria-label="Estimate period">
+          <button data-period="monthly" aria-pressed="true">Month</button><button data-period="daily" aria-pressed="false">Day</button><button data-period="annual" aria-pressed="false">Year</button>
+        </div>
+        <button id="copy-summary" class="button secondary" type="button">Copy summary</button>
+        <button id="share-state" class="button secondary" type="button">Share</button>
+        <button id="reset" class="button" type="button">Reset usage</button>
+        <button id="clear" class="button quiet" type="button">Clear</button>
+      </div>
+    </section>
+
+    <div id="global-error" class="alert error" role="alert" hidden></div>
+    <div id="save-note" class="save-note" aria-live="polite">Edits save automatically in this browser.</div>
+
+    <section id="detailed-panel" class="panel" aria-labelledby="models-title">
+      <div class="section-heading">
+        <div><span class="section-index">01</span><h2 id="models-title">Model calculation</h2><p>Token quantities and per-million USD prices are editable. Calculations update immediately.</p></div>
+        <button id="add-row" class="button secondary" type="button">+ Add model</button>
+      </div>
+      <div class="table-wrap">
+        <table class="model-table">
+          <thead><tr><th>Model</th><th>Input tokens <span>uncached</span></th><th>Input $/M</th><th>Output tokens</th><th>Output $/M</th><th>Cached tokens <span>assumed billable reads</span></th><th>Cache $/M <em>assumption</em></th><th class="right">Subtotal</th><th><span class="sr-only">Remove</span></th></tr></thead>
+          <tbody id="model-rows"></tbody>
+          <tfoot><tr><td colspan="7">Combined estimate <small>USD base</small></td><td id="table-total" class="right">$256.96</td><td></td></tr></tfoot>
+        </table>
+      </div>
+      <p class="field-hint">Accepted token formats: <code>455,019,030</code>, <code>455m</code>, <code>500k</code>, <code>1.5b</code>. Cache rates are editable assumptions unless Nous Portal explicitly lists them.</p>
+    </section>
+
+    <section id="simple-panel" class="panel" aria-labelledby="simple-title" hidden>
+      <div class="section-heading"><div><span class="section-index">01</span><h2 id="simple-title">Simple blended estimate</h2><p>Split one monthly token total across input, output, and cached usage.</p></div></div>
+      <div class="simple-grid">
+        <label class="field wide"><span>Total monthly tokens</span><input id="simple-total" inputmode="decimal" value="455,019,030"><small>Supports k, m, and b shorthand</small></label>
+        <label class="field"><span>Input %</span><input id="simple-input-pct" type="number" min="0" max="100" step="0.01"><small id="simple-input-tokens"></small></label>
+        <label class="field"><span>Output %</span><input id="simple-output-pct" type="number" min="0" max="100" step="0.01"><small id="simple-output-tokens"></small></label>
+        <label class="field"><span>Cached %</span><input id="simple-cache-pct" type="number" min="0" max="100" step="0.01"><small id="simple-cache-tokens"></small></label>
+        <label class="field"><span>Input price / 1M</span><div class="money-input"><b>$</b><input id="simple-input-price" type="number" min="0" step="0.01"></div></label>
+        <label class="field"><span>Output price / 1M</span><div class="money-input"><b>$</b><input id="simple-output-price" type="number" min="0" step="0.01"></div></label>
+        <label class="field"><span>Cache price / 1M</span><div class="money-input"><b>$</b><input id="simple-cache-price" type="number" min="0" step="0.01"></div><small>Editable assumption</small></label>
+      </div>
+      <div id="percent-error" class="inline-validation" role="alert"></div>
+    </section>
+
+    <section class="insights-grid">
+      <article class="panel contribution" aria-labelledby="contribution-title">
+        <div class="section-heading compact"><div><span class="section-index">02</span><h2 id="contribution-title">Cost by model</h2><p>Contribution to the current estimate</p></div></div>
+        <div id="model-contribution"></div>
+      </article>
+      <article class="panel profiles" aria-labelledby="profiles-title">
+        <div class="section-heading compact"><div><span class="section-index">03</span><h2 id="profiles-title">Usage by profile</h2><p>Fixed snapshot from Hermes insights · last 30 days</p></div></div>
+        <div class="stacked-bar" aria-label="Profile distribution"><span style="--share:56.63;--color:#e8a84c" title="fusion 56.63%"></span><span style="--share:42.46;--color:#6fae92" title="full 42.46%"></span><span style="--share:.86;--color:#789acb" title="telegram-lean 0.86%"></span><span style="--share:.05;--color:#a78bc1" title="default 0.05%"></span></div>
+        <div class="profile-list">
+          <div><i style="--color:#e8a84c"></i><span>fusion <small>GPT-5.6 Sol</small></span><strong>257.66M</strong><em>56.63%</em></div>
+          <div><i style="--color:#6fae92"></i><span>full <small>GPT-5.5</small></span><strong>193.20M</strong><em>42.46%</em></div>
+          <div><i style="--color:#789acb"></i><span>telegram-lean <small>GPT-5.5</small></span><strong>3.92M</strong><em>0.86%</em></div>
+          <div><i style="--color:#a78bc1"></i><span>default <small>GPT-5.6 Sol</small></span><strong>229.47K</strong><em>0.05%</em></div>
+          <div><i style="--color:#777"></i><span>fable <small>No usage</small></span><strong>0</strong><em>0%</em></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel methodology" aria-labelledby="method-title">
+      <div class="section-heading compact"><div><span class="section-index">04</span><h2 id="method-title">Assumptions & methodology</h2></div></div>
+      <div class="method-grid">
+        <div><h3>Formula</h3><code>Σ(tokens ÷ 1,000,000 × price per 1M)</code><p>Input, output, and cached tokens are priced separately for every model row. Simple mode uses a user-defined percentage split.</p></div>
+        <div><h3>Pricing provenance</h3><p><strong>Nous Portal catalog:</strong> GPT-5.6 Sol (batch) $2 input / $12 output; GPT-5.5 $4 input / $24 output per 1M. Checked Aug 9, 2026.</p><p><strong>Assumption:</strong> cache-read defaults are 10% of input ($0.20 and $0.40 per 1M). They are not represented as published Nous Portal rates.</p></div>
+        <div><h3>Estimate caveat</h3><p>This client-side estimate is not an invoice or guaranteed Portal charge. “Cached/other” is the residual between Hermes total tokens and uncached input plus output, treated here as cache reads for estimation.</p><p>Currency conversions are illustrative fixed display rates; USD remains authoritative.</p></div>
+      </div>
+      <div class="sources"><span>Sources</span><a href="https://portal.nousresearch.com/" target="_blank" rel="noreferrer">Nous Portal model catalog ↗</a><a href="https://openrouter.ai/openai/gpt-5.6-sol-20260709" target="_blank" rel="noreferrer">GPT-5.6 model reference ↗</a><a href="https://openrouter.ai/openai/gpt-5.5-20260423" target="_blank" rel="noreferrer">GPT-5.5 model reference ↗</a></div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script src="./calc.js"></script><script src="./app.js"></script>
+</body>
+</html>
