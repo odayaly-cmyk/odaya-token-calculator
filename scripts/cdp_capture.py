@@ -2,7 +2,8 @@ import base64, json, sys, time, urllib.request
 import websocket
 
 width, height, output = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3]
-req = urllib.request.Request('http://127.0.0.1:9333/json/new?http://127.0.0.1:4173/token/', method='PUT')
+page_url = sys.argv[4] if len(sys.argv) > 4 else 'http://127.0.0.1:4173/token/'
+req = urllib.request.Request(f'http://127.0.0.1:9333/json/new?{page_url}', method='PUT')
 target = json.load(urllib.request.urlopen(req))
 ws = websocket.create_connection(target['webSocketDebuggerUrl'], origin='http://127.0.0.1:9333')
 next_id = 0
@@ -19,7 +20,7 @@ def call(method, params=None):
 
 call('Emulation.setDeviceMetricsOverride', {'width': width, 'height': height, 'deviceScaleFactor': 1, 'mobile': True})
 call('Page.enable')
-call('Page.navigate', {'url': 'http://127.0.0.1:4173/token/'})
+call('Page.navigate', {'url': page_url})
 time.sleep(1)
 metrics = call('Runtime.evaluate', {'expression': "JSON.stringify({innerWidth,clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,cost:document.querySelector('#primary-cost').textContent})", 'returnByValue': True})
 shot = call('Page.captureScreenshot', {'format': 'png', 'captureBeyondViewport': False, 'fromSurface': True})

@@ -10,6 +10,6 @@ for (const file of files) {
   fs.writeFileSync(path.join(dist, file), source);
   fs.writeFileSync(path.join(dist, 'token', file), source);
 }
-fs.writeFileSync(path.join(dist, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n  Content-Security-Policy: default-src \'self\'; style-src \'self\'; script-src \'self\'; img-src \'self\' data:; connect-src \'none\'; frame-ancestors \'none\'; base-uri \'self\'; form-action \'none\'\n');
+fs.writeFileSync(path.join(dist, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n  Content-Security-Policy: default-src \'self\'; style-src \'self\' \'unsafe-inline\'; script-src \'self\'; img-src \'self\' data:; connect-src \'none\'; frame-ancestors \'none\'; base-uri \'self\'; form-action \'none\'\n');
 fs.writeFileSync(path.join(dist, '_redirects'), '/token /token/ 301\n');
 console.log(`Built ${files.length * 2 + 2} files into ${dist}`);

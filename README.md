@@ -37,14 +37,14 @@ All computation and state remain in the browser. There is no backend, login, ana
 
 ## Deployment
 
-The `dist/` directory is suitable for Cloudflare Pages, GitHub Pages, Netlify, or Vercel. For Cloudflare Pages:
+The production deployment uses Cloudflare Workers Static Assets with the custom domain `token.odaya.ai`:
 
 ```bash
 npm run build
-npx wrangler pages deploy dist --project-name odaya-token-calculator
+npx wrangler deploy --config wrangler.jsonc
 ```
 
-Attach the calculator at `token.odaya.ai` using a DNS CNAME to the static host. Keep the apex `odaya.ai` records untouched; the subdomain isolates this calculator from the root site's existing origin and SSL configuration.
+A Cloudflare Pages preview is also available at `https://odaya-token-calculator.pages.dev/`. The Worker custom domain creates and manages the proxied DNS record and SSL certificate without changing the apex `odaya.ai` origin.
 
 ## Caveat
 
