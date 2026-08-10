@@ -22,7 +22,7 @@ npm run build
 npx serve dist -l 4173
 ```
 
-Open `http://localhost:4173/token/` (the build emits both `/` and `/token/` entry points).
+Open `http://localhost:4173/`. The build also emits `/token/` as a compatibility path.
 
 ## Architecture
 
@@ -44,7 +44,7 @@ npm run build
 npx wrangler pages deploy dist --project-name odaya-token-calculator
 ```
 
-Attach a custom domain or route only after inspecting existing DNS/routes. Do not overwrite an existing root application simply to expose `/token`.
+Attach the calculator at `token.odaya.ai` using a DNS CNAME to the static host. Keep the apex `odaya.ai` records untouched; the subdomain isolates this calculator from the root site's existing origin and SSL configuration.
 
 ## Caveat
 
